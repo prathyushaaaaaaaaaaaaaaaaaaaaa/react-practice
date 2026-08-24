@@ -1,5 +1,6 @@
 # React + Vite
 # Git pull practice!
+# Second version of React Practice
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
