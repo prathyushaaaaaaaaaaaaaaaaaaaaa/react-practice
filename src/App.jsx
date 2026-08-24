@@ -122,20 +122,20 @@
 // export default App
 
 
-// import { useEffect } from "react";
+import { useEffect } from "react";
 
-// function App() {
+function App() {
 
-//   useEffect(() => {
-//     console.log("The page has loaded!");
-//   }, []);
+  useEffect(() => {
+    console.log("The page has loaded!");
+  }, []);
 
-//   return (
-//     <div>
-//       <h1>Hello!</h1>
-//       <p>Open the browser console 👀</p>
-//     </div>
-//   );
-// }
+  return (
+    <div>
+      <h1>Hello!</h1>
+      <p>Open the browser console 👀</p>
+    </div>
+  );
+}
 
-// export default App;
+export default App;
