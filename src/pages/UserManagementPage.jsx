@@ -212,9 +212,9 @@ function UserManagementPage() {
 
           <button
             onClick={
-              editingUser
-                ? updateUser
-                : createUser
+                editingUser
+                    ? updateUser
+                    : createUser
             }
           >
             {editingUser ? "Update" : "Create"}
