@@ -444,6 +444,29 @@
 // export default App;
 
 // FINAL APP.JSX CODE WITH FUNCTIONAL SIDEBAR
+
+
+// import { useState } from "react";
+// import Sidebar from "./components/Sidebar";
+// import ProductManagementPage from "./pages/ProductManagementPage";
+// import UserManagementPage from "./pages/UserManagementPage";
+
+// function App() {
+//   const [currentPage, setCurrentPage] = useState("products");
+
+//   return (
+//     <div>
+//       <Sidebar setCurrentPage={setCurrentPage} />
+
+//       {currentPage === "products" && <ProductManagementPage />}
+
+//       {currentPage === "users" && <UserManagementPage />}
+//     </div>
+//   );
+// }
+
+// export default App;
+
 import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import ProductManagementPage from "./pages/ProductManagementPage";

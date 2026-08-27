@@ -159,99 +159,139 @@ function UserManagementPage() {
   };
 
   return (
-    <div>
-      <h1>User Management</h1>
+    <div className="min-h-screen bg-gray-900 p-8">
+      <div className="max-w-6xl mx-auto">
 
-      <button
-        onClick={() => {
-          setEditingUser(null);
-          setUsername("");
-          setEmail("");
-          setPassword("");
-          setRole("");
-          setShowForm(true);
-        }}
-      >
-        + Add User
-      </button>
+        <h1>User Management</h1>
 
-      {showForm && (
-        <div>
-          <h2>
-            {editingUser ? "Edit User" : "Create User"}
-          </h2>
+        <button
+          onClick={() => {
+            setEditingUser(null);
+            setUsername("");
+            setEmail("");
+            setPassword("");
+            setRole("");
+            setShowForm(true);
+          }}
+          className="mt-2 bg-blue-800 text-white px-2.5 py-1.5 rounded-lg hover:bg-blue-700"
+        >
+          + Add User
+        </button>
 
-          <input
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
+        {showForm && (
+          <div>
+            <h2>
+              {editingUser ? "Edit User" : "Create User"}
+            </h2>
 
-          <input
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+            <input
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+            <input
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-          <input
-            placeholder="Role"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-          <button onClick={handleCancel}>
-            Cancel
-          </button>
+            <input
+              placeholder="Role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            />
 
-          <button
-            onClick={
+            <button onClick={handleCancel}>
+              Cancel
+            </button>
+
+            <button
+              onClick={
                 editingUser
-                    ? updateUser
-                    : createUser
-            }
-          >
-            {editingUser ? "Update" : "Create"}
-          </button>
-        </div>
-      )}
+                  ? updateUser
+                  : createUser
+              }
+            >
+              {editingUser ? "Update" : "Create"}
+            </button>
+          </div>
+        )}
 
-      <table>
-        <thead>
+      </div>
+
+      <table className="mt-4 w-full border-collapse border border-gray-400">
+        <thead className="bg-blue-800">
           <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
+              ID
+            </th>
+
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
+              Username
+            </th>
+
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
+              Email
+            </th>
+
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
+              Role
+            </th>
+
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
+              Actions
+            </th>
           </tr>
         </thead>
 
         <tbody>
           {users.map((user) => (
             <tr key={user[0]}>
-              <td>{user[0]}</td>
-              <td>{user[1]}</td>
-              <td>{user[2]}</td>
-              <td>{user[4]}</td>
 
-              <td>
-                <button onClick={() => handleEdit(user)}>
-                  Edit
-                </button>
-
-                <button
-                  onClick={() => deleteUser(user[0])}
-                >
-                  Delete
-                </button>
+              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                {user[0]}
               </td>
+
+              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                {user[1]}
+              </td>
+
+              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                {user[2]}
+              </td>
+
+              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                {user[4]}
+              </td>
+
+              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                <div className="flex gap-2 justify-center">
+
+                  <button
+                    onClick={() => handleEdit(user)}
+                    className="bg-blue-700 text-white px-1 py-0.5 rounded hover:bg-blue-500"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => deleteUser(user[0])}
+                    className="bg-blue-700 text-white px-1 py-0.5 rounded hover:bg-blue-500"
+                  >
+                    Delete
+                  </button>
+
+                </div>
+              </td>
+
             </tr>
           ))}
         </tbody>
