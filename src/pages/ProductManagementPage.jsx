@@ -8,15 +8,19 @@ function ProductManagementPage() {
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [stockQuantity, setStockQuantity] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imageVersion, setImageVersion] = useState(Date.now());
+
 
   // Stores the product currently being edited
   const [editingProduct, setEditingProduct] = useState(null);
 
   // Stores success/error messages
   const [message, setMessage] = useState("");
+  const [showOrders, setShowOrders] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Stores the selected image
-  const [imageFile, setImageFile] = useState(null);
 
   // GET all products
   useEffect(() => {
@@ -33,59 +37,67 @@ function ProductManagementPage() {
   }, []);
 
   // CREATE product
-  const createProduct = async () => {
-    try {
-      setMessage("");
+const createProduct = async () => {
+  try {
+    setMessage("");
 
-      const formData = new FormData();
+    const formData = new FormData();
 
-      formData.append("product_name", productName);
-      formData.append("category", category);
-      formData.append("price", price);
-      formData.append("stock_quantity", stockQuantity);
+    formData.append("product_name", productName);
+    formData.append("category", category);
+    formData.append("price", price);
+    formData.append("stock_quantity", stockQuantity);
+    if (imageFile) {
+  formData.append("image", imageFile);
+}
 
-      if (imageFile) {
-        formData.append("image", imageFile);
+    const response = await fetch(
+      "http://127.0.0.1:8000/products",
+      {
+        method: "POST",
+        body: formData,
       }
+    );
 
-      const response = await fetch(
-        "http://127.0.0.1:8000/products",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+    const data = await response.json();
 
-      const data = await response.json();
+    console.log("Create response:", data);
+    console.log("Create status:", response.status);
 
-      console.log("Create response:", data);
-
-      const updatedResponse = await fetch(
-        "http://127.0.0.1:8000/products"
-      );
-
-      const updatedProducts = await updatedResponse.json();
-
-      setProducts(updatedProducts);
-
-      setShowForm(false);
-
-      setProductName("");
-      setCategory("");
-      setPrice("");
-      setStockQuantity("");
-      setImageFile(null);
-      setEditingProduct(null);
-
-      setMessage("Product created successfully!");
-
-    } catch (error) {
-      console.error("Error creating product:", error);
-      setMessage("Error creating product.");
+    if (!response.ok) {
+      setMessage(data.detail || "Unable to create product.");
+      return;
     }
-  };
 
-  // OPEN EDIT FORM
+    // Get the updated product list
+    const updatedResponse = await fetch(
+      "http://127.0.0.1:8000/products"
+    );
+
+    const updatedProducts = await updatedResponse.json();
+
+    console.log("Updated products:", updatedProducts);
+
+    setProducts(updatedProducts);
+    setImageVersion(Date.now());
+
+    setShowForm(false);
+
+    setProductName("");
+    setCategory("");
+    setPrice("");
+    setStockQuantity("");
+    setEditingProduct(null);
+    setImageFile(null);
+
+    setMessage("Product created successfully!");
+
+  } catch (error) {
+    console.error("Error creating product:", error);
+    setMessage("Error creating product.");
+  }
+};
+// OPEN EDIT FORM
   const editProduct = (product) => {
     setEditingProduct(product);
 
@@ -93,9 +105,6 @@ function ProductManagementPage() {
     setCategory(product[2]);
     setPrice(product[3]);
     setStockQuantity(product[4]);
-
-    setImageFile(null);
-
     setShowForm(true);
     setMessage("");
   };
@@ -111,13 +120,11 @@ function ProductManagementPage() {
       formData.append("category", category);
       formData.append("price", price);
       formData.append("stock_quantity", stockQuantity);
-
       if (imageFile) {
-        formData.append("image", imageFile);
-      }
+  formData.append("image", imageFile);
+}
 
       console.log("Updating product:", editingProduct[0]);
-      console.log("Image:", imageFile);
 
       const response = await fetch(
         `http://127.0.0.1:8000/products/${editingProduct[0]}`,
@@ -143,6 +150,7 @@ function ProductManagementPage() {
       console.log("Updated products:", updatedProducts);
 
       setProducts(updatedProducts);
+      setImageVersion(Date.now());
 
       setShowForm(false);
       setEditingProduct(null);
@@ -195,12 +203,34 @@ function ProductManagementPage() {
       const updatedProducts = await updatedResponse.json();
 
       setProducts(updatedProducts);
+      setImageVersion(Date.now());
 
     } catch (error) {
       console.error("DELETE ERROR:", error);
       setMessage("Something went wrong while deleting the product.");
     }
   };
+
+// to fetch the orders
+
+const showProductOrders = async (product) => {
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/products/${product[0]}/orders`
+    );
+
+    const data = await response.json();
+
+    console.log("Orders received:", data);
+
+    setOrders(data);
+    setSelectedProduct(product);
+    setShowOrders(true);
+
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+  }
+};
 
   // OPEN CREATE FORM
   const openCreateForm = () => {
@@ -232,19 +262,20 @@ function ProductManagementPage() {
 
   return (
     <div className="min-h-screen bg-grey-900 p-8">
+    <div className="w-full">
 
-      <div className="max-w-6xl mx-auto">
-
-        <h1 className="text-3xl font-bold text-gray-100">
+        <h1 className="text-3xl font-bold text-gray-100 text-center">
           Product Management
         </h1>
 
+        <div className="flex justify-center">
         <button
           onClick={openCreateForm}
           className="mt-4 bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
           + Add Product
         </button>
+        </div>
 
         {/* Success/Error Message */}
         {message && (
@@ -291,19 +322,12 @@ function ProductManagementPage() {
                 onChange={(e) => setStockQuantity(e.target.value)}
               />
 
-              {/* Image Upload */}
-              <input
+                <input
                 type="file"
                 accept="image/*"
-                className="w-full px-3 py-2 border border-gray-500 rounded-lg bg-gray-700 text-gray-200"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-
-                  if (file) {
-                    setImageFile(file);
-                  }
-                }}
-              />
+                className="w-full px-3 py-2 border border-gray-500 rounded-lg bg-gray-700 text-white"
+                onChange={(e) => setImageFile(e.target.files[0])}
+                />
 
               <div className="flex gap-3">
 
@@ -331,9 +355,112 @@ function ProductManagementPage() {
           </div>
         )}
       </div>
+      
+
+
+      {/* Orders Popup */}
+        {showOrders && selectedProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+
+            <div className="bg-gray-800 p-6 rounded-lg w-3/4 max-h-[80vh] overflow-y-auto">
+
+            <div className="flex justify-between items-center mb-5">
+
+                <h2 className="text-2xl font-semibold text-gray-100">
+                Orders for {selectedProduct[1]}
+                </h2>
+
+                <button
+                onClick={() => setShowOrders(false)}
+                className="text-gray-300 hover:text-white text-xl"
+                >
+                ✕
+                </button>
+
+            </div>
+
+            {orders.length === 0 ? (
+
+                <p className="text-gray-300">
+                No orders found for this product.
+                </p>
+
+            ) : (
+
+                <table className="w-full border-collapse border border-gray-400">
+
+                <thead className="bg-blue-800">
+
+                    <tr>
+
+                    <th className="border border-gray-400 py-2 px-3 text-gray-100">
+                        Order ID
+                    </th>
+
+                    <th className="border border-gray-400 py-2 px-3 text-gray-100">
+                        Order Date
+                    </th>
+
+                    <th className="border border-gray-400 py-2 px-3 text-gray-100">
+                        Customer ID
+                    </th>
+
+                    <th className="border border-gray-400 py-2 px-3 text-gray-100">
+                        Quantity
+                    </th>
+
+                    <th className="border border-gray-400 py-2 px-3 text-gray-100">
+                        Status
+                    </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {orders.map((order) => (
+
+                    <tr key={order[0]}>
+
+                        <td className="border border-gray-400 py-2 px-3 text-gray-100">
+                        {order[0]}
+                        </td>
+
+                        <td className="border border-gray-400 py-2 px-3 text-gray-100">
+                        {order[1]}
+                        </td>
+
+                        <td className="border border-gray-400 py-2 px-3 text-gray-100">
+                        {order[2]}
+                        </td>
+
+                        <td className="border border-gray-400 py-2 px-3 text-gray-100">
+                        {order[3]}
+                        </td>
+
+                        <td className="border border-gray-400 py-2 px-3 text-gray-100">
+                        {order[4]}
+                        </td>
+
+                    </tr>
+
+                    ))}
+
+                </tbody>
+
+                </table>
+
+            )}
+
+            </div>
+
+        </div>
+        )}
 
       {/* Product Table */}
-      <table className="mt-6 w-full border-collapse border border-gray-400">
+      <div className="mt-4 overflow-x-auto">
+      <table className="mt-4 w-full border-collapse border border-gray-400">
 
         <thead className="bg-blue-800">
 
@@ -342,6 +469,7 @@ function ProductManagementPage() {
             <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
               ID
             </th>
+
 
             <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
               Product Name
@@ -360,8 +488,26 @@ function ProductManagementPage() {
             </th>
 
             <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
-              Image
+                Successful
             </th>
+
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
+                Failed
+            </th>
+
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
+                Payment Due
+            </th>
+
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
+                Total Received</th>
+
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">Pending Amount</th>
+
+            <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
+            Image
+            </th>
+
 
             <th className="border border-gray-400 py-3 px-4 text-sm font-semibold text-gray-100">
               Actions
@@ -379,65 +525,89 @@ function ProductManagementPage() {
 
               <td className="border border-gray-400 py-3 px-4 text-gray-100">
                 {product[0]}
-              </td>
+                </td>
 
-              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
                 {product[1]}
-              </td>
+            </td>
 
-              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
                 {product[2]}
-              </td>
+            </td>
 
-              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
                 ₹{product[3]}
-              </td>
+            </td>
 
-              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
                 {product[4]}
-              </td>
+            </td>
 
-              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                {product[5]}
+            </td>
 
-                {product[5] && (
-                  <img
-                    src={`http://127.0.0.1:8000/uploads/${product[5]}`}
-                    alt={product[1]}
-                    width="80"
-                  />
-                )}
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                {product[6]}
+            </td>
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                {product[7]}
+            </td>
 
-              </td>
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                ₹{product[8]}
+            </td>
 
-              <td className="border border-gray-400 py-3 px-4 text-gray-100">
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
+                ₹{product[9]}
+            </td>
 
+             <td className="border border-gray-400 py-3 px-4">
+            <img
+                key={`${product[0]}-${imageVersion}`}
+                src={`http://127.0.0.1:8000/products/${product[0]}/image?v=${imageVersion}`}
+                alt={product[1]}
+                onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                }}
+            />
+            </td>
+
+            {/* Actions */}
+            <td className="border border-gray-400 py-3 px-4 text-gray-100">
                 <div className="flex gap-2 justify-center">
+                
+                
+                <button
+                    onClick={() => showProductOrders(product)}
+                    className="bg-blue-700 text-white px-2 py-1 rounded hover:bg-blue-500"
+                >
+                    Show Orders
+                </button>
 
-                  <button
+                <button
                     onClick={() => editProduct(product)}
                     className="bg-blue-700 text-white px-2 py-1 rounded hover:bg-blue-500"
-                  >
+                >
                     Edit
-                  </button>
+                </button>
 
-                  <button
+                <button
                     onClick={() => deleteProduct(product[0])}
                     className="bg-blue-700 text-white px-2 py-1 rounded hover:bg-blue-500"
-                  >
+                >
                     Delete
-                  </button>
+                </button>
 
-                </div>
+        </div>
+      </td>
 
-              </td>
-
-            </tr>
-
-          ))}
-
-        </tbody>
+    </tr>
+  ))}
+</tbody>
 
       </table>
+      </div>
 
     </div>
   );
